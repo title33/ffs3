@@ -28,10 +28,10 @@ HitboxPart.Transparency = 0.75
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
-    Name = 'BladeBreaker free',
+    Name = 'Blade',
     HidePremium = true,
     SaveConfig = true,
-    ConfigFolder = 'BladeBreaker'
+    ConfigFolder = 'Blade'
 })
 -- // tabs // --
 local Combat = MainWindow:MakeTab({
