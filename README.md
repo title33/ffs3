@@ -1,3 +1,4 @@
+
 local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
@@ -7,39 +8,38 @@ local Remotes = {
     Parry = ReplicatedStorage.Remotes.ParryButtonPress -- // nil / no tuple FIRETYPE = :Fire()
 }
 
+local bug_ball_method_____________________________________init = false
 local ParryCD = false
 local Parry = false
 local Visual = false
-bug_ball_method_____________________________________init = false
 
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromRGB(255,255,255) 
+HitboxPart.Color = Color3.fromHex('#FFA500')
 HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.ForceField 
+HitboxPart.Material = Enum.Material.SmoothPlastic
 HitboxPart.Shape = Enum.PartType.Ball
-HitboxPart.CanQuery = false 
-HitboxPart.CanTouch = false 
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
+-- // Start of script // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
-    Name = 'BladeBreaker free',
+    Name = 'GG',
     HidePremium = true,
     SaveConfig = true,
     ConfigFolder = 'BladeBreaker'
 })
-
+-- // tabs // --
 local Combat = MainWindow:MakeTab({
     Name = 'Combat',
     Icon = 'rbxassetid://11385161113',
     PremiumOnly = false
 })
 
-
+-- // toggles n shit // --
 
 Combat:AddToggle({
     Name = 'Auto-parry',
@@ -56,6 +56,7 @@ Combat:AddToggle({
         Visual = Value
     end
 })
+
 
 
 
@@ -109,6 +110,7 @@ RunService.Stepped:Connect(function(Time, DeltaTime)
         end
     end
 end)
+
 
 
 Library:Init()
