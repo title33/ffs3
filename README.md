@@ -10,7 +10,7 @@ local Remotes = {
 local ParryCD = false
 local Parry = false
 local Visual = false
-
+bug_ball_method_____________________________________init = false
 
 
 local HitboxPart = Instance.new('Part', workspace)
@@ -27,17 +27,18 @@ HitboxPart.Transparency = 0.75
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
-    Name = 'GG',
+    Name = 'BladeBreaker free',
     HidePremium = true,
     SaveConfig = true,
     ConfigFolder = 'BladeBreaker'
 })
--- // tabs // --
+
 local Combat = MainWindow:MakeTab({
     Name = 'Combat',
     Icon = 'rbxassetid://11385161113',
     PremiumOnly = false
 })
+
 
 
 Combat:AddToggle({
@@ -57,6 +58,26 @@ Combat:AddToggle({
 })
 
 
+
+local function Parry(OBJ)
+    local function getplayerids()
+        local ids = {}
+        for i, player in pairs(game.Players:GetPlayers()) do
+            ids[player.UserId] = player.Character.Head
+        end
+        return ids
+    end
+    if not bug_ball_method_____________________________________init then
+        Remotes.Parry:Fire()
+    else
+        game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, getplayerids(), {100, 100})
+    end
+    ParryCD = true
+    OBJ:SetAttribute('target', '')
+    task.delay(.1, function()
+        ParryCD = false
+    end)
+end
 RunService.Stepped:Connect(function(Time, DeltaTime)
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
@@ -89,6 +110,5 @@ RunService.Stepped:Connect(function(Time, DeltaTime)
     end
 end)
 
--- // extra // --
 
 Library:Init()
