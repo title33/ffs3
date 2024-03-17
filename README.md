@@ -1,5 +1,3 @@
--- // Main Variables // --
-
 local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
@@ -18,7 +16,7 @@ local Visual = false
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromRGB(255,255,255) 
 HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.SmoothPlastic
+HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanQuery = false 
 HitboxPart.CanTouch = false 
@@ -26,7 +24,6 @@ HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
--- // Start of script // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
@@ -42,7 +39,6 @@ local Combat = MainWindow:MakeTab({
     PremiumOnly = false
 })
 
--- // toggles n shit // --
 
 Combat:AddToggle({
     Name = 'Auto-parry',
@@ -61,26 +57,6 @@ Combat:AddToggle({
 })
 
 
--- // main stuff // --
-local function Parry(OBJ)
-    local function getplayerids()
-        local ids = {}
-        for i, player in pairs(game.Players:GetPlayers()) do
-            ids[player.UserId] = player.Character.Head
-        end
-        return ids
-    end
-    if not bug_ball_method_____________________________________init then
-        Remotes.Parry:Fire()
-    else
-        game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, getplayerids(), {100, 100})
-    end
-    ParryCD = true
-    OBJ:SetAttribute('target', '')
-    task.delay(.1, function()
-        ParryCD = false
-    end)
-end
 RunService.Stepped:Connect(function(Time, DeltaTime)
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
