@@ -58,13 +58,7 @@ Combat:AddToggle({
     end
 })
 
-Combat:AddToggle({
-    Name = 'Bug ball',
-    Default = false,
-    Callback = function (Value)
-        bug_ball_method_____________________________________init = Value
-    end
-})
+
 
 -- // main stuff // --
 local function Parry(OBJ)
