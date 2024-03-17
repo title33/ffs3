@@ -14,7 +14,7 @@ local Visual = false
 
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromHex('#FFA500')
+HitboxPart.Color = Color3.fromRGB(255,255,255)
 HitboxPart.Anchored = true
 Ball.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
