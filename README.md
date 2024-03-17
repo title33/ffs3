@@ -62,50 +62,40 @@ Combat:AddToggle({
 
 -- // main stuff // --
 local function Parry(OBJ)
-    local function getplayerids()
-        local ids = {}
-        for i, player in pairs(game.Players:GetPlayers()) do
-            ids[player.UserId] = player.Character.Head
+    local Player = game.Players.LocalPlayer
+    if not ParryCD then
+        if not bug_ball_method_init then
+            Remotes.Parry:Fire()
+        else
+            game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, getplayerids(), {100, 100})
         end
-        return ids
+        ParryCD = true
+        OBJ:SetAttribute('target', '')
+        task.delay(0.1, function()
+            ParryCD = false
+        end)
     end
-    if not bug_ball_method_____________________________________init then
-        Remotes.Parry:Fire()
-    else
-        game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, getplayerids(), {100, 100})
-    end
-    ParryCD = true
-    OBJ:SetAttribute('target', '')
-    task.delay(.1, function()
-        ParryCD = false
-    end)
 end
-RunService.Stepped:Connect(function(Time, DeltaTime)
+
+game:GetService("RunService").Stepped:Connect(function(Time, DeltaTime)
+    local Player = game.Players.LocalPlayer
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
             local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = ball.Velocity.X + ball.Velocity.Y + ball.Velocity.Z
+            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
             if Visual then
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
-                if ballVolume >= 1 then
-                    HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-                elseif ballVolume <= 5 then
-                    HitboxPart.Size = Vector3.new(15, 15, 15)
-                else
-                    HitboxPart.Size = -Vector3.new(ballVolume, ballVolume, ballVolume)
-                end
+                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
-            if ball:GetAttribute('target') == (Player.Name or Player.DisplayName) and not ParryCD then
-                if Parry then
-                    if distance <= ballMagnitude or distance <= 15 then
-                        Parry(ball)
-                    else
-                        assert(true, 'if u skid u bad :grin:')
-                    end
+            if ball:GetAttribute('target') == Player.Name and not ParryCD then
+                if distance <= ballMagnitude or distance <= 15 then
+                    Parry(ball)
+                else
+                    warn('If you skid, you bad :grin:')
                 end
             end
         end
