@@ -14,16 +14,16 @@ local Parry = false
 local Visual = false
 
 
-local HitboxPart = Instance.new("Part") 
+local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Shape = Enum.PartType.Ball 
 HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.CanQuery = false 
 HitboxPart.CanTouch = false 
 HitboxPart.CanCollide = false 
 HitboxPart.CastShadow = false 
+HitboxPart.Anchored = true
 HitboxPart.Color = Color3.fromRGB(255,255,255) 
-HitboxPart.Parent = workspace
-
+HitboxPart.Anchored = true
 
 
 -- // Start of script // --
