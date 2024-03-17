@@ -1,4 +1,3 @@
-
 local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
@@ -17,7 +16,7 @@ local Visual = false
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#FFA500')
 HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.SmoothPlastic
+Ball.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
