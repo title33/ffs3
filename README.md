@@ -1,31 +1,30 @@
+
 -- // Main Variables // --
 
-local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
-local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
+local RunService, UserInputService, TweenService = game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
+local Players, ReplicatedStorage, Debris = game:GetService("Players"), game:GetService("ReplicatedStorage"), game:GetService("Debris")
 
 local Remotes = {
-    ThunderDash = ReplicatedStorage.Remotes.ThunderDash, -- // ThunderDash Endpoint, Table where parts are put (just put random cframes) FIRETYPE = :FireServer()
-    Emote = ReplicatedStorage.Remotes.CustomEmote, -- // Boolean / true or false, Emote / 'Emperyean or sumn' and 'Wavelight' FIRETYPE = :FireServer()
-    Parry = ReplicatedStorage.Remotes.ParryButtonPress -- // nil / no tuple FIRETYPE = :Fire()
+    ThunderDash = ReplicatedStorage.Remotes.ThunderDash,
+    Emote = ReplicatedStorage.Remotes.CustomEmote,
+    Parry = ReplicatedStorage.Remotes.ParryButtonPress
 }
 
-local bug_ball_method_____________________________________init = false
 local ParryCD = false
-local Parry = false
-local Visual = false
+local ParryEnabled = false
+local VisualEnabled = false
 
-
-local HitboxPart = Instance.new('Part', workspace)
+local HitboxPart = Instance.new('Part')
 HitboxPart.Color = Color3.fromHex('#f51d00')
-HitboxPart.Anchored = true
 HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
+HitboxPart.Transparency = 0.75
+HitboxPart.Anchored = true
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
-HitboxPart.Transparency = 0.75
 
 -- // Start of script // --
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
 
 local MainWindow = Library:MakeWindow({
     Name = 'Blade',
@@ -33,6 +32,7 @@ local MainWindow = Library:MakeWindow({
     SaveConfig = true,
     ConfigFolder = 'Blade'
 })
+
 -- // tabs // --
 local Combat = MainWindow:MakeTab({
     Name = 'Combat',
@@ -46,7 +46,7 @@ Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
     Callback = function (Value)
-        Parry = Value
+        ParryEnabled = Value
     end
 })
 
@@ -54,23 +54,16 @@ Combat:AddToggle({
     Name = 'Visual',
     Default = false,
     Callback = function (Value)
-        Visual = Value
+        VisualEnabled = Value
     end
 })
 
-
-
 -- // main stuff // --
-local function Parry(OBJ)
-    local Player = game.Players.LocalPlayer
+local function PerformParry(ball)
     if not ParryCD then
-        if not bug_ball_method_init then
-            Remotes.Parry:Fire()
-        else
-            game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, {Player.UserId}, {100, 100})
-        end
+        Remotes.Parry:Fire()
         ParryCD = true
-        OBJ:SetAttribute('target', '')
+        ball:SetAttribute('target', '')
         spawn(function() 
             wait(0.1)
             ParryCD = false
@@ -79,22 +72,22 @@ local function Parry(OBJ)
 end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
-    local Player = game.Players.LocalPlayer
-    for i, ball in pairs(workspace.Balls:GetChildren()) do
+    local LocalPlayer = Players.LocalPlayer
+    for _, ball in ipairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
-            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
+            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if Visual then
-                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
+            if VisualEnabled then
+                HitboxPart.Position = LocalPlayer.Character.HumanoidRootPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
-            if ball:GetAttribute('target') == Player.Name and not ParryCD then
+            if ball:GetAttribute('target') == LocalPlayer.Name and not ParryCD then
                 if distance <= ballMagnitude or distance <= 15 then
-                    Parry(ball)
+                    PerformParry(ball)
                 else
                     warn('If you skid, you bad :grin:')
                 end
@@ -102,7 +95,6 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
         end
     end
 end)
-
 
 -- // extra // --
 
