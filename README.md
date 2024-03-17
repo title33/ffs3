@@ -67,17 +67,18 @@ local function Parry(OBJ)
         if not bug_ball_method_init then
             Remotes.Parry:Fire()
         else
-            game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, getplayerids(), {100, 100})
+            game.ReplicatedStorage.Remotes.ParryAttempt:FireServer(0.5, Player.Character.HumanoidRootPart.CFrame, {Player.UserId}, {100, 100})
         end
         ParryCD = true
         OBJ:SetAttribute('target', '')
-        task.delay(0.1, function()
+        spawn(function() 
+            wait(0.1)
             ParryCD = false
         end)
     end
 end
 
-game:GetService("RunService").Stepped:Connect(function(Time, DeltaTime)
+RunService.Heartbeat:Connect(function(Time, DeltaTime)
     local Player = game.Players.LocalPlayer
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
@@ -101,6 +102,7 @@ game:GetService("RunService").Stepped:Connect(function(Time, DeltaTime)
         end
     end
 end)
+
 
 -- // extra // --
 
