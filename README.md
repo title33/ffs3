@@ -14,17 +14,17 @@ local Parry = false
 local Visual = false
 
 
+
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Shape = Enum.PartType.Ball 
-HitboxPart.Material = Enum.Material.ForceField 
-HitboxPart.CanQuery = false 
-HitboxPart.CanTouch = false 
-HitboxPart.CanCollide = false 
-HitboxPart.CastShadow = false 
-HitboxPart.Anchored = true
 HitboxPart.Color = Color3.fromRGB(255,255,255) 
 HitboxPart.Anchored = true
-
+HitboxPart.Material = Enum.Material.SmoothPlastic
+HitboxPart.Shape = Enum.PartType.Ball
+HitboxPart.CanQuery = false 
+HitboxPart.CanTouch = false 
+HitboxPart.CanCollide = false
+HitboxPart.CastShadow = false
+HitboxPart.Transparency = 0.75
 
 -- // Start of script // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
