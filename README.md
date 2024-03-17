@@ -1,3 +1,5 @@
+-- // Main Variables // --
+
 local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
@@ -14,9 +16,9 @@ local Visual = false
 
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromRGB(255,255,255)
+HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
-Ball.Material = Enum.Material.ForceField 
+HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
@@ -26,7 +28,7 @@ HitboxPart.Transparency = 0.75
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
-    Name = 'GG',
+    Name = 'BladeBreaker free',
     HidePremium = true,
     SaveConfig = true,
     ConfigFolder = 'BladeBreaker'
@@ -56,9 +58,15 @@ Combat:AddToggle({
     end
 })
 
+Combat:AddToggle({
+    Name = 'Bug ball',
+    Default = false,
+    Callback = function (Value)
+        bug_ball_method_____________________________________init = Value
+    end
+})
 
-
-
+-- // main stuff // --
 local function Parry(OBJ)
     local function getplayerids()
         local ids = {}
@@ -110,6 +118,6 @@ RunService.Stepped:Connect(function(Time, DeltaTime)
     end
 end)
 
-
+-- // extra // --
 
 Library:Init()
