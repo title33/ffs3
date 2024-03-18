@@ -9,8 +9,8 @@ local Remotes = {
     Parry = ReplicatedStorage.Remotes.ParryButtonPress
 }
 
-local Parry = false
 local Visual = false
+local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
 
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
@@ -44,7 +44,7 @@ Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
     Callback = function (Value)
-        Parry = Value
+        ParryEnabled = Value
     end
 })
 
@@ -56,11 +56,11 @@ Combat:AddToggle({
     end
 })
 
-
 -- // main stuff // --
-local function Parry(OBJ)
-    local Player = game.Players.LocalPlayer
-    Remotes.Parry:Fire()
+local function PerformParry(OBJ, ParryEnabled)
+    if ParryEnabled then
+        Remotes.Parry:Fire()
+    end
 end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
@@ -79,7 +79,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             end
             if ball:GetAttribute('target') == Player.Name then
                 if distance <= ballMagnitude or distance <= 15 then
-                    Parry(ball)
+                    PerformParry(ball, ParryEnabled)
                 end
             end
         end
