@@ -9,7 +9,6 @@ local Remotes = {
     Parry = ReplicatedStorage.Remotes.ParryButtonPress
 }
 
-local ParryCD = false
 local Parry = false
 local Visual = false
 
@@ -61,15 +60,7 @@ Combat:AddToggle({
 -- // main stuff // --
 local function Parry(OBJ)
     local Player = game.Players.LocalPlayer
-    if not ParryCD then
-        Remotes.Parry:Fire()
-        ParryCD = true
-        OBJ:SetAttribute('target', '')
-        spawn(function() 
-            wait(0.1)
-            ParryCD = false
-        end)
-    end
+    Remotes.Parry:Fire()
 end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
@@ -86,7 +77,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
-            if ball:GetAttribute('target') == Player.Name and not ParryCD then
+            if ball:GetAttribute('target') == Player.Name then
                 if distance <= ballMagnitude or distance <= 15 then
                     Parry(ball)
                 end
