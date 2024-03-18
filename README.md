@@ -1,5 +1,6 @@
 -- // Main Variables // --
-local RunService, UserInputService, TweenService = game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
+
+local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
 local Remotes = {
@@ -9,76 +10,54 @@ local Remotes = {
 }
 
 local Visual = false
-local ParryEnabled = false
+local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromRGB(255, 29, 0)
+HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.ForceField
+HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
-local BallPart = Instance.new("Part")
-BallPart.Size = Vector3.new(45, 45, 45)
-BallPart.Shape = Enum.PartType.Ball
-BallPart.Material = Enum.Material.ForceField
-BallPart.CanQuery = false
-BallPart.CanTouch = false
-BallPart.CanCollide = false
-BallPart.CastShadow = false
-BallPart.Color = Color3.fromRGB(255, 255, 255)
-BallPart.Parent = workspace
-
 -- // Start of script // --
-local function GetClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
+local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= Player and player.Character and player.Character.PrimaryPart then
-            local distance = (Player.Character.PrimaryPart.Position - player.Character.PrimaryPart.Position).Magnitude
-            if distance < shortestDistance then
-                shortestDistance = distance
-                closestPlayer = player
-            end
-        end
+local MainWindow = Library:MakeWindow({
+    Name = 'Blade',
+    HidePremium = true,
+    SaveConfig = true,
+    ConfigFolder = 'Blade'
+})
+
+-- // tabs // --
+local Combat = MainWindow:MakeTab({
+    Name = 'Combat',
+    Icon = 'rbxassetid://11385161113',
+    PremiumOnly = false
+})
+
+-- // toggles n shit // --
+
+Combat:AddToggle({
+    Name = 'Auto-parry',
+    Default = false,
+    Callback = function (Value)
+        ParryEnabled = Value
     end
+})
 
-    return closestPlayer
-end
-
-local function UpdateBallPartPosition()
-    local closestPlayer = GetClosestPlayer()
-    if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart then
-        BallPart.Position = closestPlayer.Character.PrimaryPart.Position
+Combat:AddToggle({
+    Name = 'Visual',
+    Default = false,
+    Callback = function (Value)
+        Visual = Value
     end
-end
+})
 
-RunService.Heartbeat:Connect(function()
-    UpdateBallPartPosition()
-end)
-
-local function isInBallPart(player)
-    if player.Character and player.Character.PrimaryPart then
-        local rootPart = player.Character.PrimaryPart
-        local distance = (rootPart.Position - BallPart.Position).Magnitude
-        local ballRadius = BallPart.Size.X / 2 -- สมมติว่าขนาดของ BallPart เป็นกลม
-
-        return distance <= ballRadius
-    end
-    return false
-end
-
-local function spamParryButtonPress()
-    while isInBallPart(Player) do
-        Remotes.Parry:Fire()
-        wait()
-    end
-end
-
-local function PerformParry(OBJ, ParryEnabled)
+-- // main stuff // --
+local function PerformParry(OBJ, ParryEnabled) -- แก้ไขการประกาศฟังก์ชัน PerformParry เพื่อรับ ParryEnabled
     if ParryEnabled then
         Remotes.Parry:Fire()
     end
@@ -100,60 +79,13 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             end
             if ball:GetAttribute('target') == Player.Name then
                 if distance <= ballMagnitude or distance <= 15 then
-                    PerformParry(ball, ParryEnabled)
+                    PerformParry(ball, ParryEnabled) -- ส่ง ParryEnabled เข้าไป
                 end
             end
         end
     end
 end)
 
--- // Library // --
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+-- // extra // --
 
-local MainWindow = Library:MakeWindow({
-    Name = 'Blade',
-    HidePremium = true,
-    SaveConfig = true,
-    ConfigFolder = 'Blade'
-})
-
--- // Tabs // --
-local Combat = MainWindow:MakeTab({
-    Name = 'Combat',
-    Icon = 'rbxassetid://11385161113',
-    PremiumOnly = false
-})
-
--- // Toggles // --
-
-Combat:AddToggle({
-    Name = 'Auto-parry',
-    Default = false,
-    Callback = function (Value)
-        ParryEnabled = Value
-    end
-})
-
-Combat:AddToggle({
-    Name = 'Visual',
-    Default = false,
-    Callback = function (Value)
-        Visual = Value
-    end
-})
-
--- // Main Logic // --
-RunService.Heartbeat:Connect(function()
-    local closestPlayer = GetClosestPlayer()
-    if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart then
-        local primaryPart = closestPlayer.Character.PrimaryPart
-        if primaryPart:FindFirstChild("Highlight") then
-            if isInBallPart(closestPlayer) then
-                spamParryButtonPress()
-            end
-        end
-    end
-end)
-
--- // Initialize // --
 Library:Init()
