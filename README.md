@@ -10,11 +10,11 @@ local Remotes = {
 }
 
 local ParryCD = false
-local ParryEnabled = false
-local VisualEnabled = false
+local Parry = false
+local Visual = false
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromRGB(245, 29, 0)
+HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
 HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
@@ -45,7 +45,7 @@ Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
     Callback = function (Value)
-        ParryEnabled = Value
+        Parry = Value
     end
 })
 
@@ -53,11 +53,16 @@ Combat:AddToggle({
     Name = 'Visual',
     Default = false,
     Callback = function (Value)
-        VisualEnabled = Value
+        Visual = Value
     end
 })
 
-local BallSpeedLabel = Combat:AddLabel("Ball Speed: 0")
+-- Update label text function
+local function UpdateLabel(text)
+    Combat:SetLabel("Speed: " .. text)
+end
+
+Combat:AddLabel("Speed: ")
 
 -- // main stuff // --
 local function Parry(OBJ)
@@ -81,7 +86,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if VisualEnabled then
+            if Visual then
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
@@ -94,8 +99,9 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                     warn('If you skid, you bad :grin:')
                 end
             end
-            -- Update Ball Speed Label
-            BallSpeedLabel:SetText("Ball Speed: " .. string.format("%.2f", ballVelocity))
+            -- Calculate and update ball speed
+            local ballSpeed = ballVelocity.Magnitude
+            UpdateLabel(tostring(math.floor(ballSpeed)))
         end
     end
 end)
