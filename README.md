@@ -21,7 +21,7 @@ HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
 local BallPart = Instance.new("Part")
-BallPart.Size = Vector3.new(20, 20, 20)
+BallPart.Size = Vector3.new(45, 45, 45)
 BallPart.Shape = Enum.PartType.Ball
 BallPart.Material = Enum.Material.ForceField
 BallPart.CanQuery = false
