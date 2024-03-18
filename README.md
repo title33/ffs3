@@ -1,18 +1,9 @@
 local workspace = game:GetService("Workspace")
-local players = game:GetService("Players")
 local runService = game:GetService("RunService")
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
 
-local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
-local Remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9) -- A second argument in 
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9)
 
-local function Parry() -- Parries.
-    Remotes:WaitForChild("ParryButtonPress"):Fire()
-end 
-
-local ballFolder = workspace.Balls
 local indicatorPart = Instance.new("Part")
 indicatorPart.Size = Vector3.new(5, 5, 5)
 indicatorPart.Anchored = true
@@ -21,8 +12,9 @@ indicatorPart.Transparency = 1
 indicatorPart.BrickColor = BrickColor.new("Bright red")
 indicatorPart.Parent = workspace
 
-local lastBallPressed = nil
-local isKeyPressed = false
+local function Parry()
+    Remotes:WaitForChild("ParryButtonPress"):Fire()
+end 
 
 local function calculatePredictionTime(ball, player)
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -49,25 +41,21 @@ local function checkProximityToPlayer(ball, player)
     
     local ballSpeedThreshold = math.max(0.4, 0.6 - ball.Velocity.magnitude * 0.01)
 
-    if predictionTime <= ballSpeedThreshold and realBallAttribute == true and target == player.Name and not isKeyPressed then
-        Parry() -- Call Parry function
-        lastBallPressed = ball
-        isKeyPressed = true
-    elseif lastBallPressed == ball and (predictionTime > ballSpeedThreshold or realBallAttribute ~= true or target ~= player.Name) then
-        isKeyPressed = false
+    if predictionTime <= ballSpeedThreshold and realBallAttribute == true and target == player.Name then
+        Parry()
     end
 end
 
 local function checkBallsProximity()
-    local player = players.LocalPlayer
+    local player = game.Players.LocalPlayer
     if player then
-        for _, ball in pairs(ballFolder:GetChildren()) do
+        for _, ball in pairs(workspace.Balls:GetChildren()) do
             checkProximityToPlayer(ball, player)
             updateIndicatorPosition(ball)
         end
     end
 end
 
-runService.Heartbeat:Connect(checkBallsProximity)
+runService.RenderStepped:Connect(checkBallsProximity)
 
 print("Script ran without errors")
