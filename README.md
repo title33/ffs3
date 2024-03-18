@@ -21,7 +21,7 @@ HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
 local BallPart = Instance.new("Part")
-BallPart.Size = Vector3.new(30, 30, 30)
+BallPart.Size = Vector3.new(20, 20, 20)
 BallPart.Shape = Enum.PartType.Ball
 BallPart.Material = Enum.Material.ForceField
 BallPart.CanQuery = false
@@ -95,29 +95,33 @@ Combat:AddToggle({
 })
 
 -- // main stuff // --
-local function PerformParry(OBJ, ParryEnabled)
-    if ParryEnabled then
+local function PerformParryRepeatedly(BallPart, PrimaryPart)
+    while BallPart.Parent == PrimaryPart.Parent do
         Remotes.Parry:Fire()
+        wait(0.1)  -- รอสักครู่ก่อนที่จะเรียก Parry อีกครั้ง
     end
 end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
     local Player = game.Players.LocalPlayer
-    for i, ball in pairs(workspace.Balls:GetChildren()) do
+    local primaryPart = Player.Character and Player.Character.PrimaryPart
+    if not primaryPart then return end  -- หยุดการดำเนินการหากไม่มี PrimaryPart
+
+    for _, ball in ipairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
-            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
+            local distance = (primaryPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
             if Visual then
-                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
+                HitboxPart.Position = primaryPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name then
                 if distance <= ballMagnitude or distance <= 15 then
-                    PerformParry(ball, ParryEnabled)
+                    PerformParryRepeatedly(BallPart, primaryPart)
                 end
             end
         end
