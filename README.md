@@ -10,7 +10,7 @@ local Remotes = {
 }
 
 local Visual = false
-local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
+local ParryEnabled = false 
 
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
