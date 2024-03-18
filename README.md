@@ -95,7 +95,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                 end
             end
             -- Update Ball Speed Label
-            BallSpeedLabel:SetText("Ball Speed: " .. string.format("%.2f", ballMagnitude))
+            BallSpeedLabel:SetText("Ball Speed: " .. string.format("%.2f", ballVelocity))
         end
     end
 end)
