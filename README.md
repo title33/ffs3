@@ -1,6 +1,6 @@
 -- // Main Variables // --
 
-local RunService, UserInputService, TweenService = game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
+local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
 local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
 local Remotes = {
@@ -10,11 +10,11 @@ local Remotes = {
 }
 
 local ParryCD = false
-local ParryActive = false
-local Visual = false
+local ParryEnabled = false
+local VisualEnabled = false
 
 local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromRGB(255, 29, 0)
+HitboxPart.Color = Color3.fromRGB(245, 29, 0)
 HitboxPart.Anchored = true
 HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
@@ -39,13 +39,13 @@ local Combat = MainWindow:MakeTab({
     PremiumOnly = false
 })
 
--- // toggles and stuff // --
+-- // toggles n shit // --
 
 Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
     Callback = function (Value)
-        ParryActive = Value
+        ParryEnabled = Value
     end
 })
 
@@ -53,17 +53,19 @@ Combat:AddToggle({
     Name = 'Visual',
     Default = false,
     Callback = function (Value)
-        Visual = Value
+        VisualEnabled = Value
     end
 })
 
+local BallSpeedLabel = Combat:AddLabel("Ball Speed: 0")
+
 -- // main stuff // --
-local function PerformParry(ball)
+local function Parry(OBJ)
     local Player = game.Players.LocalPlayer
     if not ParryCD then
         Remotes.Parry:Fire()
         ParryCD = true
-        ball:SetAttribute('target', '')
+        OBJ:SetAttribute('target', '')
         spawn(function() 
             wait(0.1)
             ParryCD = false
@@ -75,47 +77,29 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
     local Player = game.Players.LocalPlayer
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
+            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
-            if Visual then
+            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+            if VisualEnabled then
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
-                HitboxPart.Size = Vector3.new(ballMagnitude, ballMagnitude, ballMagnitude)
+                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name and not ParryCD then
-                local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
                 if distance <= ballMagnitude or distance <= 15 then
-                    PerformParry(ball)
+                    Parry(ball)
                 else
                     warn('If you skid, you bad :grin:')
                 end
             end
+            -- Update Ball Speed Label
+            BallSpeedLabel:SetText("Ball Speed: " .. string.format("%.2f", ballMagnitude))
         end
     end
 end)
 
--- // Create UI Element for Ball Speed // --
-local BallSpeedLabel = MainWindow:MakeLabel({
-    Name = 'Ball Speed: N/A',
-    Size = UDim2.new(0, 200, 0, 30),
-    Position = UDim2.new(0.5, 0, 0.8, 0),
-    Background = Color3.fromRGB(30, 30, 30),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    BorderSizePixel = 2
-})
+-- // extra // --
 
--- // Update Ball Speed in UI Element // --
-RunService.Heartbeat:Connect(function(Time, DeltaTime)
-    for _, ball in pairs(workspace.Balls:GetChildren()) do
-        if ball:GetAttribute('realBall') then
-            local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            BallSpeedLabel:SetText('Ball Speed: ' .. math.floor(ballMagnitude))
-        end
-    end
-end)
-
--- // Initiate UI // --
 Library:Init()
-
