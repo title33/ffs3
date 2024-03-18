@@ -59,7 +59,7 @@ Combat:AddToggle({
 
 
 -- // main stuff // --
-local function PerformParry(OBJ)
+local function Parry(OBJ)
     local Player = game.Players.LocalPlayer
     if not ParryCD then
         Remotes.Parry:Fire()
@@ -87,18 +87,8 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name and not ParryCD then
-                if ballMagnitude == 60 then
-                    if distance <= 30 then
-                        PerformParry(ball)
-                    else
-                        warn('If you skid, you bad :grin:')
-                    end
-                else
-                    if distance <= 15 then
-                        PerformParry(ball)
-                    else
-                        warn('If you skid, you bad :grin:')
-                    end
+                if distance <= ballMagnitude or distance <= 15 then
+                    Parry(ball)
                 end
             end
         end
