@@ -60,6 +60,54 @@ RunService.Heartbeat:Connect(function()
     UpdateBallPartPosition()
 end)
 
+local function isInBallPart(player)
+    if player.Character and player.Character.PrimaryPart then
+        local rootPart = player.Character.PrimaryPart
+        local distance = (rootPart.Position - BallPart.Position).Magnitude
+        local ballRadius = BallPart.Size.X / 2 -- สมมติว่าขนาดของ BallPart เป็นกลม
+
+        return distance <= ballRadius
+    end
+    return false
+end
+
+local function spamParryButtonPress()
+    while isInBallPart(Player) do
+        Remotes.Parry:Fire()
+        wait()
+    end
+end
+
+local function PerformParry(OBJ, ParryEnabled)
+    if ParryEnabled then
+        Remotes.Parry:Fire()
+    end
+end
+
+RunService.Heartbeat:Connect(function(Time, DeltaTime)
+    local Player = game.Players.LocalPlayer
+    for i, ball in pairs(workspace.Balls:GetChildren()) do
+        if ball:GetAttribute('realBall') then
+            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
+            local ballVelocity = ball.Velocity
+            local ballMagnitude = ballVelocity.Magnitude / 3
+            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+            if Visual then
+                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
+                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
+            else
+                HitboxPart.Position = Vector3.new(0, 100000, 0)
+            end
+            if ball:GetAttribute('target') == Player.Name then
+                if distance <= ballMagnitude or distance <= 15 then
+                    PerformParry(ball, ParryEnabled)
+                end
+            end
+        end
+    end
+end)
+
+-- // Library // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local MainWindow = Library:MakeWindow({
@@ -69,14 +117,14 @@ local MainWindow = Library:MakeWindow({
     ConfigFolder = 'Blade'
 })
 
--- // tabs // --
+-- // Tabs // --
 local Combat = MainWindow:MakeTab({
     Name = 'Combat',
     Icon = 'rbxassetid://11385161113',
     PremiumOnly = false
 })
 
--- // toggles n shit // --
+-- // Toggles // --
 
 Combat:AddToggle({
     Name = 'Auto-parry',
@@ -94,40 +142,18 @@ Combat:AddToggle({
     end
 })
 
--- // main stuff // --
-local function PerformParryRepeatedly(BallPart, PrimaryPart)
-    while BallPart.Parent == PrimaryPart.Parent do
-        Remotes.Parry:Fire()
-        wait(0.1)  -- รอสักครู่ก่อนที่จะเรียก Parry อีกครั้ง
-    end
-end
-
-RunService.Heartbeat:Connect(function(Time, DeltaTime)
-    local Player = game.Players.LocalPlayer
-    local primaryPart = Player.Character and Player.Character.PrimaryPart
-    if not primaryPart then return end  -- หยุดการดำเนินการหากไม่มี PrimaryPart
-
-    for _, ball in ipairs(workspace.Balls:GetChildren()) do
-        if ball:GetAttribute('realBall') then
-            local distance = (primaryPart.Position - ball.Position).Magnitude
-            local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if Visual then
-                HitboxPart.Position = primaryPart.Position
-                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-            else
-                HitboxPart.Position = Vector3.new(0, 100000, 0)
-            end
-            if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= 15 then
-                    PerformParryRepeatedly(BallPart, primaryPart)
-                end
+-- // Main Logic // --
+RunService.Heartbeat:Connect(function()
+    local closestPlayer = GetClosestPlayer()
+    if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart then
+        local primaryPart = closestPlayer.Character.PrimaryPart
+        if primaryPart:FindFirstChild("Highlight") then
+            if isInBallPart(closestPlayer) then
+                spamParryButtonPress()
             end
         end
     end
 end)
 
--- // extra // --
-
+-- // Initialize // --
 Library:Init()
