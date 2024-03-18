@@ -59,7 +59,7 @@ Combat:AddToggle({
 
 
 -- // main stuff // --
-local function Parry(OBJ)
+local function PerformParry(OBJ)
     local Player = game.Players.LocalPlayer
     if not ParryCD then
         Remotes.Parry:Fire()
@@ -80,10 +80,6 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            
-            -- Print the speed of the ball
-            print("Ball Speed:", ballMagnitude)
-
             if Visual then
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
@@ -91,10 +87,18 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name and not ParryCD then
-                if distance <= ballMagnitude or distance <= 15 then
-                    Parry(ball)
+                if ballMagnitude == 60 then
+                    if distance <= 30 then
+                        PerformParry(ball)
+                    else
+                        warn('If you skid, you bad :grin:')
+                    end
                 else
-                    warn('If you skid, you bad :grin:')
+                    if distance <= 15 then
+                        PerformParry(ball)
+                    else
+                        warn('If you skid, you bad :grin:')
+                    end
                 end
             end
         end
