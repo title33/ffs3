@@ -57,12 +57,6 @@ Combat:AddToggle({
     end
 })
 
--- Update label text function
-local function UpdateLabel(text)
-    Combat:SetLabel("Speed: " .. text)
-end
-
-Combat:AddLabel("Speed: ")
 
 -- // main stuff // --
 local function Parry(OBJ)
@@ -86,6 +80,10 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+            
+            -- Print the speed of the ball
+            print("Ball Speed:", ballMagnitude)
+
             if Visual then
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
@@ -99,9 +97,6 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                     warn('If you skid, you bad :grin:')
                 end
             end
-            -- Calculate and update ball speed
-            local ballSpeed = ballVelocity.Magnitude
-            UpdateLabel(tostring(math.floor(ballSpeed)))
         end
     end
 end)
