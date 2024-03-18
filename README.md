@@ -10,7 +10,7 @@ local Remotes = {
 }
 
 local Visual = false
-local ParryEnabled = false
+local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
 
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
@@ -57,7 +57,7 @@ Combat:AddToggle({
 })
 
 -- // main stuff // --
-local function PerformParry(OBJ, ParryEnabled)
+local function PerformParry(OBJ, ParryEnabled) -- แก้ไขการประกาศฟังก์ชัน PerformParry เพื่อรับ ParryEnabled
     if ParryEnabled then
         Remotes.Parry:Fire()
     end
@@ -65,25 +65,28 @@ end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
     local Player = game.Players.LocalPlayer
-    for i, ball in pairs(workspace.Balls:GetChildren()) do
-        if ball:GetAttribute('realBall') then
-            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
-            local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if Visual then
-                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
-                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-            else
-                HitboxPart.Position = Vector3.new(0, 100000, 0)
-            end
-            local timeToCollision = distance / ballMagnitude
-            if ball:GetAttribute('target') == Player.Name and timeToCollision <= 0.1 then
+for i, ball in pairs(workspace.Balls:GetChildren()) do
+    if ball:GetAttribute('realBall') then
+        local ballPosition = ball.Position
+        local playerPosition = Player.Character.HumanoidRootPart.Position
+        local distance = (playerPosition - ballPosition).Magnitude
+        local ballVelocity = ball.Velocity.Magnitude
+        local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+        if Visual then
+            HitboxPart.Position = playerPosition
+            HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
+        else
+            HitboxPart.Position = Vector3.new(0, 100000, 0)
+        end
+        if ball:GetAttribute('target') == Player.Name then
+            local timeToReach = distance / ballVelocity -- คำนวณเวลาที่ลูกบอลจะถึงเหมือนกับคำนวณ distance/ballMagnitude
+            if timeToReach <= 0.1 then -- ตั้งเวลาที่ลูกบอลจะถึงไปเป็น 0.1 วินาที
                 PerformParry(ball, ParryEnabled)
             end
         end
     end
-end)
+end
+
 
 -- // extra // --
 
