@@ -1,10 +1,7 @@
 -- // Main Variables // --
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local Player = game.Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Debris = game:GetService("Debris")
+
+local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
+local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
 
 local Remotes = {
     ThunderDash = ReplicatedStorage.Remotes.ThunderDash,
@@ -12,10 +9,10 @@ local Remotes = {
     Parry = ReplicatedStorage.Remotes.ParryButtonPress
 }
 
-local ParryEnabled = false
-local VisualEnabled = false
+local Parry = false
+local Visual = false
 
-local HitboxPart = Instance.new('Part')
+local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
 HitboxPart.Material = Enum.Material.ForceField 
@@ -23,7 +20,6 @@ HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
-HitboxPart.Parent = workspace
 
 -- // Start of script // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
@@ -48,7 +44,7 @@ Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
     Callback = function (Value)
-        ParryEnabled = Value
+        Parry = Value
     end
 })
 
@@ -56,39 +52,34 @@ Combat:AddToggle({
     Name = 'Visual',
     Default = false,
     Callback = function (Value)
-        VisualEnabled = Value
+        Visual = Value
     end
 })
 
+
 -- // main stuff // --
-local function Parry(ball)
+local function Parry(OBJ)
+    local Player = game.Players.LocalPlayer
     Remotes.Parry:Fire()
 end
 
-RunService.Heartbeat:Connect(function()
-    local character = Player.Character
-    if not character then return end
-
-    local rootPart = character:WaitForChild("HumanoidRootPart")
-    for _, ball in ipairs(workspace.Balls:GetChildren()) do
+RunService.Heartbeat:Connect(function(Time, DeltaTime)
+    local Player = game.Players.LocalPlayer
+    for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
-            local distance = (rootPart.Position - ball.Position).Magnitude
+            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
             local ballMagnitude = ballVelocity.Magnitude / 3
             local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-
-            if VisualEnabled then
-                HitboxPart.Position = rootPart.Position
+            if Visual then
+                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
                 HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
-
             if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= 17 then
-                    if ParryEnabled then
-                        Parry(ball)
-                    end
+                if distance <= ballMagnitude or distance <= 15 then
+                    Parry(ball)
                 end
             end
         end
@@ -96,4 +87,5 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- // extra // --
+
 Library:Init()
