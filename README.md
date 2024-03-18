@@ -1,9 +1,11 @@
+-- // Main Variables // --
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Player = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Debris = game:GetService("Debris")
 
-local LocalPlayer = Players.LocalPlayer
 local Remotes = {
     ThunderDash = ReplicatedStorage.Remotes.ThunderDash,
     Emote = ReplicatedStorage.Remotes.CustomEmote,
@@ -14,53 +16,18 @@ local ParryEnabled = false
 local VisualEnabled = false
 
 local HitboxPart = Instance.new('Part')
-HitboxPart.Color = Color3.fromRGB(245, 29, 0)
+HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
 HitboxPart.Material = Enum.Material.ForceField 
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
-HitboxPart.Parent = Workspace
+HitboxPart.Parent = workspace
 
-local function PerformParry(ball)
-    Remotes.Parry:Fire()
-end
-
-RunService.Heartbeat:Connect(function(deltaTime)
-    local Character = LocalPlayer.Character
-    if not Character then return end
-    
-    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-    if not HumanoidRootPart then return end
-    
-    local CharacterPosition = HumanoidRootPart.Position
-    
-    for _, ball in ipairs(Workspace.Balls:GetChildren()) do
-        if ball:GetAttribute('realBall') then
-            local distance = (CharacterPosition - ball.Position).Magnitude
-            local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            
-            if VisualEnabled then
-                HitboxPart.Position = CharacterPosition
-                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-            else
-                HitboxPart.Position = Vector3.new(0, 100000, 0)
-            end
-            
-            if ball:GetAttribute('target') == LocalPlayer.Name then
-                if distance <= ballMagnitude or distance <= 15 then
-                    PerformParry(ball)
-                end
-            end
-        end
-    end
-end)
-
--- GUI Creation (using the provided library)
+-- // Start of script // --
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
 local MainWindow = Library:MakeWindow({
     Name = 'Blade',
     HidePremium = true,
@@ -68,26 +35,65 @@ local MainWindow = Library:MakeWindow({
     ConfigFolder = 'Blade'
 })
 
-local CombatTab = MainWindow:MakeTab({
+-- // tabs // --
+local Combat = MainWindow:MakeTab({
     Name = 'Combat',
     Icon = 'rbxassetid://11385161113',
     PremiumOnly = false
 })
 
-CombatTab:AddToggle({
+-- // toggles n shit // --
+
+Combat:AddToggle({
     Name = 'Auto-parry',
     Default = false,
-    Callback = function(value)
-        ParryEnabled = value
+    Callback = function (Value)
+        ParryEnabled = Value
     end
 })
 
-CombatTab:AddToggle({
+Combat:AddToggle({
     Name = 'Visual',
     Default = false,
-    Callback = function(value)
-        VisualEnabled = value
+    Callback = function (Value)
+        VisualEnabled = Value
     end
 })
 
+-- // main stuff // --
+local function Parry(ball)
+    Remotes.Parry:Fire()
+end
+
+RunService.Heartbeat:Connect(function()
+    local character = Player.Character
+    if not character then return end
+
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    for _, ball in ipairs(workspace.Balls:GetChildren()) do
+        if ball:GetAttribute('realBall') then
+            local distance = (rootPart.Position - ball.Position).Magnitude
+            local ballVelocity = ball.Velocity
+            local ballMagnitude = ballVelocity.Magnitude / 3
+            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+
+            if VisualEnabled then
+                HitboxPart.Position = rootPart.Position
+                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
+            else
+                HitboxPart.Position = Vector3.new(0, 100000, 0)
+            end
+
+            if ball:GetAttribute('target') == Player.Name then
+                if distance <= ballMagnitude or distance <= 17 then
+                    if ParryEnabled then
+                        Parry(ball)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- // extra // --
 Library:Init()
