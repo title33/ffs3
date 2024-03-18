@@ -10,7 +10,7 @@ local Remotes = {
 }
 
 local Visual = false
-local ParryEnabled = false 
+local ParryEnabled = false
 
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
@@ -78,7 +78,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= 15 then
+                if distance <= ballMagnitude or distance <= (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude then
                     PerformParry(ball, ParryEnabled)
                 end
             end
