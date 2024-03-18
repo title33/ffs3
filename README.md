@@ -10,12 +10,12 @@ local Remotes = {
 }
 
 local Visual = false
-local ParryEnabled = false
+local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
 
 local HitboxPart = Instance.new('Part', workspace)
 HitboxPart.Color = Color3.fromHex('#f51d00')
 HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.ForceField 
+HitboxPart.Material = Enum.Material.ForceField
 HitboxPart.Shape = Enum.PartType.Ball
 HitboxPart.CanCollide = false
 HitboxPart.CastShadow = false
@@ -57,7 +57,7 @@ Combat:AddToggle({
 })
 
 -- // main stuff // --
-local function PerformParry(OBJ, ParryEnabled)
+local function PerformParry(ParryEnabled) -- Updated function signature
     if ParryEnabled then
         Remotes.Parry:Fire()
     end
@@ -65,22 +65,28 @@ end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
     local Player = game.Players.LocalPlayer
+
     for i, ball in pairs(workspace.Balls:GetChildren()) do
         if ball:GetAttribute('realBall') then
-            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
             local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if Visual then
+            local ballMagnitude = ballVelocity.Magnitude / 3 -- Adjust this factor for desired parry range
+
+            local distanceToBall = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
+
+            -- Calculate auto-range based on ball velocity
+            local autoRange = ballMagnitude + (ballMagnitude / 2)  -- Adjust this formula for finer control
+
+            if ball:GetAttribute('target') == Player.Name then
+                if distanceToBall <= autoRange then
+                    PerformParry(ParryEnabled)
+                end
+            end
+
+            if Visual then  -- Update hitbox position based on auto-range
                 HitboxPart.Position = Player.Character.HumanoidRootPart.Position
-                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
+                HitboxPart.Size = Vector3.new(autoRange * 2, autoRange * 2, autoRange * 2)
             else
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
-            end
-            if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude then
-                    PerformParry(ball, ParryEnabled)
-                end
             end
         end
     end
