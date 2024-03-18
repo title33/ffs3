@@ -1,93 +1,73 @@
--- // Main Variables // --
+local workspace = game:GetService("Workspace")
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
 
-local RunService, UserInputService, TweenService = game.RunService, game.UserInputService, game.TweenService
-local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
-local Remotes = {
-    ThunderDash = ReplicatedStorage.Remotes.ThunderDash,
-    Emote = ReplicatedStorage.Remotes.CustomEmote,
-    Parry = ReplicatedStorage.Remotes.ParryButtonPress
-}
+local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9) -- A second argument in 
 
-local Visual = false
-local ParryEnabled = false -- เพิ่มตัวแปร ParryEnabled และกำหนดค่าเริ่มต้นเป็น false
+local function Parry() -- Parries.
+    Remotes:WaitForChild("ParryButtonPress"):Fire()
+end 
 
-local HitboxPart = Instance.new('Part', workspace)
-HitboxPart.Color = Color3.fromHex('#f51d00')
-HitboxPart.Anchored = true
-HitboxPart.Material = Enum.Material.ForceField 
-HitboxPart.Shape = Enum.PartType.Ball
-HitboxPart.CanCollide = false
-HitboxPart.CastShadow = false
-HitboxPart.Transparency = 0.75
+local ballFolder = workspace.Balls
+local indicatorPart = Instance.new("Part")
+indicatorPart.Size = Vector3.new(5, 5, 5)
+indicatorPart.Anchored = true
+indicatorPart.CanCollide = false
+indicatorPart.Transparency = 1
+indicatorPart.BrickColor = BrickColor.new("Bright red")
+indicatorPart.Parent = workspace
 
--- // Start of script // --
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local lastBallPressed = nil
+local isKeyPressed = false
 
-local MainWindow = Library:MakeWindow({
-    Name = 'Blade',
-    HidePremium = true,
-    SaveConfig = true,
-    ConfigFolder = 'Blade'
-})
-
--- // tabs // --
-local Combat = MainWindow:MakeTab({
-    Name = 'Combat',
-    Icon = 'rbxassetid://11385161113',
-    PremiumOnly = false
-})
-
--- // toggles n shit // --
-
-Combat:AddToggle({
-    Name = 'Auto-parry',
-    Default = false,
-    Callback = function (Value)
-        ParryEnabled = Value
+local function calculatePredictionTime(ball, player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local rootPart = player.Character.HumanoidRootPart
+        local relativePosition = ball.Position - rootPart.Position
+        local velocity = ball.Velocity + rootPart.Velocity 
+        local a = (ball.Size.magnitude / 2) 
+        local b = relativePosition.magnitude
+        local c = math.sqrt(a * a + b * b)
+        local timeToCollision = (c - a) / velocity.magnitude
+        return timeToCollision
     end
-})
+    return math.huge
+end
 
-Combat:AddToggle({
-    Name = 'Visual',
-    Default = false,
-    Callback = function (Value)
-        Visual = Value
-    end
-})
+local function updateIndicatorPosition(ball)
+    indicatorPart.Position = ball.Position
+end
 
--- // main stuff // --
-local function PerformParry(OBJ, ParryEnabled) -- แก้ไขการประกาศฟังก์ชัน PerformParry เพื่อรับ ParryEnabled
-    if ParryEnabled then
-        Remotes.Parry:Fire()
+local function checkProximityToPlayer(ball, player)
+    local predictionTime = calculatePredictionTime(ball, player)
+    local realBallAttribute = ball:GetAttribute("realBall")
+    local target = ball:GetAttribute("target")
+    
+    local ballSpeedThreshold = math.max(0.4, 0.6 - ball.Velocity.magnitude * 0.01)
+
+    if predictionTime <= ballSpeedThreshold and realBallAttribute == true and target == player.Name and not isKeyPressed then
+        Parry() -- Call Parry function
+        lastBallPressed = ball
+        isKeyPressed = true
+    elseif lastBallPressed == ball and (predictionTime > ballSpeedThreshold or realBallAttribute ~= true or target ~= player.Name) then
+        isKeyPressed = false
     end
 end
 
-RunService.Heartbeat:Connect(function(Time, DeltaTime)
-    local Player = game.Players.LocalPlayer
-for i, ball in pairs(workspace.Balls:GetChildren()) do
-    if ball:GetAttribute('realBall') then
-        local ballPosition = ball.Position
-        local playerPosition = Player.Character.HumanoidRootPart.Position
-        local distance = (playerPosition - ballPosition).Magnitude
-        local ballVelocity = ball.Velocity.Magnitude
-        local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-        if Visual then
-            HitboxPart.Position = playerPosition
-            HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-        else
-            HitboxPart.Position = Vector3.new(0, 100000, 0)
-        end
-        if ball:GetAttribute('target') == Player.Name then
-            local timeToReach = distance / ballVelocity -- คำนวณเวลาที่ลูกบอลจะถึงเหมือนกับคำนวณ distance/ballMagnitude
-            if timeToReach <= 0.1 then -- ตั้งเวลาที่ลูกบอลจะถึงไปเป็น 0.1 วินาที
-                PerformParry(ball, ParryEnabled)
-            end
+local function checkBallsProximity()
+    local player = players.LocalPlayer
+    if player then
+        for _, ball in pairs(ballFolder:GetChildren()) do
+            checkProximityToPlayer(ball, player)
+            updateIndicatorPosition(ball)
         end
     end
 end
 
+runService.Heartbeat:Connect(checkBallsProximity)
 
--- // extra // --
-
-Library:Init()
+print("Script ran without errors")
