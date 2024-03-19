@@ -56,6 +56,10 @@ local function UpdateBallPartPosition()
     end
 end
 
+RunService.Heartbeat:Connect(function()
+    UpdateBallPartPosition()
+end)
+
 local function IsPlayerInsideBallPart()
     local closestTarget = GetClosestLivingTarget()
     if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") then
@@ -74,14 +78,12 @@ end
 local function spamParryButtonPress()
     while true do
         game:GetService("ReplicatedStorage").Remotes.ParryButtonPress:Fire()
-        wait()
-        print("gg") -- พิ้น 'gg' ทุกครั้งที่เรียกใช้ spamParryButtonPress()
+        print("gg") -- พิ้น 'gg' เมื่อ spamParryButtonPress ถูกเรียกใช้
+        wait() 
     end
 end
 
-while true do
-    RunService.Heartbeat:Wait()
-    UpdateBallPartPosition()
+RunService.Heartbeat:Connect(function()
     if IsPlayerInsideBallPart() then
         local closestTarget = GetClosestLivingTarget()
         if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") and closestTarget:FindFirstChild("Humanoid") then
@@ -93,7 +95,7 @@ while true do
         spamParryButtonPress = function() end
         ChangeBallPartColor(Color3.fromRGB(255, 255, 255)) -- เปลี่ยนสี BallPart เป็นขาว
     end
-end
+end)
 
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
