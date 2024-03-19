@@ -21,7 +21,7 @@ HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
 local BallPart = Instance.new("Part")
-BallPart.Size = Vector3.new(20, 20, 20)
+BallPart.Size = Vector3.new(50, 50, 50)
 BallPart.Shape = Enum.PartType.Ball
 BallPart.Material = Enum.Material.ForceField
 BallPart.CanQuery = false
@@ -78,13 +78,15 @@ end
 local function spamParryButtonPress()
     while true do
         game:GetService("ReplicatedStorage").Remotes.ParryButtonPress:Fire()
-        wait() 
+        wait()
+        print("gg")
     end
 end
 
 RunService.Heartbeat:Connect(function()
     if IsPlayerInsideBallPart() then
-        if PrimaryPart:FindFirstChild("Highlight") then
+        local closestPlayer = GetClosestPlayer()
+        if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart and closestPlayer.Character.PrimaryPart:FindFirstChild("Highlight") then
             spamParryButtonPress()
             ChangeBallPartColor(Color3.fromRGB(255, 0, 0)) -- เปลี่ยนสี BallPart เป็นแดง
         end
