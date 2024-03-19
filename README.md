@@ -1,10 +1,8 @@
 -- // Main Variables // --
-local RunService, UserInputService, TweenService = game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
-local Player, ReplicatedStorage, Debris = game.Players.LocalPlayer, game.ReplicatedStorage, game.Debris
+local RunService, TweenService = game:GetService("RunService"), game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Remotes = {
-    ThunderDash = ReplicatedStorage.Remotes.ThunderDash,
-    Emote = ReplicatedStorage.Remotes.CustomEmote,
     Parry = ReplicatedStorage.Remotes.ParryButtonPress
 }
 
@@ -32,27 +30,27 @@ BallPart.Color = Color3.fromRGB(255, 255, 255)
 BallPart.Parent = workspace
 
 -- // Start of script // --
-local function GetClosestLivingTarget()
-    local closestTarget = nil
+local function GetClosestLivingEntity()
+    local closestEntity = nil
     local shortestDistance = math.huge
 
-    for _, target in ipairs(workspace:GetChildren()) do
-        if target:IsA("Model") and target:FindFirstChild("HumanoidRootPart") and target:FindFirstChild("Humanoid") then
-            local distance = (Player.Character.HumanoidRootPart.Position - target.HumanoidRootPart.Position).Magnitude
+    for _, entity in ipairs(workspace:GetChildren()) do
+        if entity:IsA("Model") and entity:FindFirstChild("Humanoid") then
+            local distance = (BallPart.Position - entity.PrimaryPart.Position).Magnitude
             if distance < shortestDistance then
                 shortestDistance = distance
-                closestTarget = target
+                closestEntity = entity
             end
         end
     end
 
-    return closestTarget
+    return closestEntity
 end
 
 local function UpdateBallPartPosition()
-    local closestTarget = GetClosestLivingTarget()
-    if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") then
-        BallPart.Position = closestTarget.HumanoidRootPart.Position
+    local closestEntity = GetClosestLivingEntity()
+    if closestEntity and closestEntity:FindFirstChild("HumanoidRootPart") then
+        BallPart.Position = closestEntity.HumanoidRootPart.Position
     end
 end
 
@@ -60,13 +58,10 @@ RunService.Heartbeat:Connect(function()
     UpdateBallPartPosition()
 end)
 
-local function IsPlayerInsideBallPart()
-    local closestTarget = GetClosestLivingTarget()
-    if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") then
-        local distance = (closestTarget.HumanoidRootPart.Position - BallPart.Position).Magnitude
-        if distance <= BallPart.Size.X / 2 then
-            return true
-        end
+local function IsEntityInsideBallPart(entity)
+    if entity and entity:FindFirstChild("HumanoidRootPart") then
+        local distance = (BallPart.Position - entity.HumanoidRootPart.Position).Magnitude
+        return distance <= BallPart.Size.X / 2
     end
     return false
 end
@@ -77,21 +72,20 @@ end
 
 local function spamParryButtonPress()
     while true do
-        game:GetService("ReplicatedStorage").Remotes.ParryButtonPress:Fire()
-        print("gg") -- พิ้น 'gg' เมื่อ spamParryButtonPress ถูกเรียกใช้
+        Remotes.Parry:Fire()
         wait() 
     end
 end
 
 RunService.Heartbeat:Connect(function()
-    if IsPlayerInsideBallPart() then
-        local closestTarget = GetClosestLivingTarget()
-        if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") and closestTarget:FindFirstChild("Humanoid") then
+    if IsEntityInsideBallPart(GetClosestLivingEntity()) then
+        local closestEntity = GetClosestLivingEntity()
+        if closestEntity and closestEntity:FindFirstChild("Highlight") then
             spamParryButtonPress()
             ChangeBallPartColor(Color3.fromRGB(255, 0, 0)) -- เปลี่ยนสี BallPart เป็นแดง
         end
     else
-        -- เมื่อผู้เล่นไม่ได้อยู่ใน BallPart ของ LivingTarget ให้หยุด spamParryButtonPress() และเปลี่ยนสีของ BallPart เป็นขาว
+        -- เมื่อไม่มีสิ่งที่มีชีวิตอยู่ใน BallPart ให้หยุด spamParryButtonPress() และเปลี่ยนสีของ BallPart เป็นขาว
         spamParryButtonPress = function() end
         ChangeBallPartColor(Color3.fromRGB(255, 255, 255)) -- เปลี่ยนสี BallPart เป็นขาว
     end
@@ -139,28 +133,30 @@ local function PerformParry(OBJ, ParryEnabled)
 end
 
 RunService.Heartbeat:Connect(function(Time, DeltaTime)
-    local Player = game.Players.LocalPlayer
-    for i, ball in pairs(workspace.Balls:GetChildren()) do
-        if ball:GetAttribute('realBall') then
-            local distance = (Player.Character.HumanoidRootPart.Position - ball.Position).Magnitude
-            local ballVelocity = ball.Velocity
-            local ballMagnitude = ballVelocity.Magnitude / 3
-            local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
-            if Visual then
-                HitboxPart.Position = Player.Character.HumanoidRootPart.Position
-                HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
-            else
-                HitboxPart.Position = Vector3.new(0, 100000, 0)
-            end
-            if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= 15 then
-                    PerformParry(ball, ParryEnabled)
+    local closestEntity = GetClosestLivingEntity()
+    if closestEntity then
+        for _, ball in pairs(workspace.Balls:GetChildren()) do
+            if ball:GetAttribute('realBall') then
+                local distance = (closestEntity.HumanoidRootPart.Position - ball.Position).Magnitude
+                local ballVelocity = ball.Velocity
+                local ballMagnitude = ballVelocity.Magnitude / 3
+                local ballVolume = math.abs(ballVelocity.X + ballVelocity.Y + ballVelocity.Z)
+                if Visual then
+                    HitboxPart.Position = closestEntity.HumanoidRootPart.Position
+                    HitboxPart.Size = Vector3.new(ballVolume, ballVolume, ballVolume)
+                else
+                    HitboxPart.Position = Vector3.new(0, 100000, 0)
+                end
+                if ball:GetAttribute('target') == closestEntity.Name then
+                    if distance <= ballMagnitude or distance <= 15 then
+                        PerformParry(ball, ParryEnabled)
+                    end
                 end
             end
         end
     end
 end)
 
--- // extra // --
+-- // extra d // --
 
 Library:Init()
