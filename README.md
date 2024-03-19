@@ -78,7 +78,7 @@ RunService.Heartbeat:Connect(function(Time, DeltaTime)
                 HitboxPart.Position = Vector3.new(0, 100000, 0)
             end
             if ball:GetAttribute('target') == Player.Name then
-                if distance <= ballMagnitude or distance <= 15 then
+                if distance <= ballVelocity or distance <= 15 then
                     PerformParry(ball, ParryEnabled) -- ส่ง ParryEnabled เข้าไป
                 end
             end
