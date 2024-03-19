@@ -21,7 +21,7 @@ HitboxPart.CastShadow = false
 HitboxPart.Transparency = 0.75
 
 local BallPart = Instance.new("Part")
-BallPart.Size = Vector3.new(50, 50, 50)
+BallPart.Size = Vector3.new(20, 20, 20)
 BallPart.Shape = Enum.PartType.Ball
 BallPart.Material = Enum.Material.ForceField
 BallPart.CanQuery = false
@@ -32,38 +32,34 @@ BallPart.Color = Color3.fromRGB(255, 255, 255)
 BallPart.Parent = workspace
 
 -- // Start of script // --
-local function GetClosestPlayer()
-    local closestPlayer = nil
+local function GetClosestLivingTarget()
+    local closestTarget = nil
     local shortestDistance = math.huge
 
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= Player and player.Character and player.Character.PrimaryPart then
-            local distance = (Player.Character.PrimaryPart.Position - player.Character.PrimaryPart.Position).Magnitude
+    for _, target in ipairs(workspace:GetChildren()) do
+        if target:IsA("Model") and target:FindFirstChild("HumanoidRootPart") and target:FindFirstChild("Humanoid") then
+            local distance = (Player.Character.HumanoidRootPart.Position - target.HumanoidRootPart.Position).Magnitude
             if distance < shortestDistance then
                 shortestDistance = distance
-                closestPlayer = player
+                closestTarget = target
             end
         end
     end
 
-    return closestPlayer
+    return closestTarget
 end
 
 local function UpdateBallPartPosition()
-    local closestPlayer = GetClosestPlayer()
-    if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart then
-        BallPart.Position = closestPlayer.Character.PrimaryPart.Position
+    local closestTarget = GetClosestLivingTarget()
+    if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") then
+        BallPart.Position = closestTarget.HumanoidRootPart.Position
     end
 end
 
-RunService.Heartbeat:Connect(function()
-    UpdateBallPartPosition()
-end)
-
 local function IsPlayerInsideBallPart()
-    local closestPlayer = GetClosestPlayer()
-    if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart then
-        local distance = (closestPlayer.Character.PrimaryPart.Position - BallPart.Position).Magnitude
+    local closestTarget = GetClosestLivingTarget()
+    if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") then
+        local distance = (closestTarget.HumanoidRootPart.Position - BallPart.Position).Magnitude
         if distance <= BallPart.Size.X / 2 then
             return true
         end
@@ -79,23 +75,25 @@ local function spamParryButtonPress()
     while true do
         game:GetService("ReplicatedStorage").Remotes.ParryButtonPress:Fire()
         wait()
-        print("gg")
+        print("gg") -- พิ้น 'gg' ทุกครั้งที่เรียกใช้ spamParryButtonPress()
     end
 end
 
-RunService.Heartbeat:Connect(function()
+while true do
+    RunService.Heartbeat:Wait()
+    UpdateBallPartPosition()
     if IsPlayerInsideBallPart() then
-        local closestPlayer = GetClosestPlayer()
-        if closestPlayer and closestPlayer.Character and closestPlayer.Character.PrimaryPart and closestPlayer.Character.PrimaryPart:FindFirstChild("Highlight") then
+        local closestTarget = GetClosestLivingTarget()
+        if closestTarget and closestTarget:FindFirstChild("HumanoidRootPart") and closestTarget:FindFirstChild("Humanoid") then
             spamParryButtonPress()
             ChangeBallPartColor(Color3.fromRGB(255, 0, 0)) -- เปลี่ยนสี BallPart เป็นแดง
         end
     else
-        -- เมื่อผู้เล่นไม่ได้อยู่ใน BallPart ของ PrimaryPart ให้หยุด spamParryButtonPress() และเปลี่ยนสีของ BallPart เป็นขาว
+        -- เมื่อผู้เล่นไม่ได้อยู่ใน BallPart ของ LivingTarget ให้หยุด spamParryButtonPress() และเปลี่ยนสีของ BallPart เป็นขาว
         spamParryButtonPress = function() end
         ChangeBallPartColor(Color3.fromRGB(255, 255, 255)) -- เปลี่ยนสี BallPart เป็นขาว
     end
-end)
+end
 
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
